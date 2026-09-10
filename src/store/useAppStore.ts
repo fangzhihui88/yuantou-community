@@ -6,6 +6,7 @@ import type {
   Badge, LevelInfo, CheckinInfo, LotteryPrize, Draft, Visitor,
   NotificationPrefs, UserSettings, FAQItem,
 } from '../types'
+import { demoPosts, demoTopicList } from '../utils/demoData'
 
 // ============== Mock 数据 ==============
 const mockCurrentUser: User = {
@@ -61,6 +62,8 @@ const mockPosts: Post[] = [
     { id: 'user_007', nickname: '摄影达人', avatar: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=200&h=200&fit=crop&q=80', followers: 15600, isVip: true },
     '黄昏时分的深圳湾，绝美！📷',
     { images: ['https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=800&h=600&fit=crop&q=80', 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&h=600&fit=crop&q=80'], topics: [{ id: 'topic_010', name: '摄影', posts: 4100 }], likes: 890, comments: 45, shares: 23, location: '深圳·南山' }),
+  // 生活化示例动态（与演示数据同源，供未接后端的页面展示）
+  ...demoPosts,
 ]
 
 const mockTopics: Topic[] = [
@@ -74,6 +77,8 @@ const mockTopics: Topic[] = [
   { id: 'topic_008', name: '产品经理', posts: 4200, category: '职场' },
   { id: 'topic_009', name: '生活方式', posts: 2600, category: '生活' },
   { id: 'topic_010', name: '摄影', posts: 4100, category: '生活' },
+  // 生活化示例话题（与演示数据同源）
+  ...demoTopicList,
 ]
 
 const mockNotifications: Notification[] = [

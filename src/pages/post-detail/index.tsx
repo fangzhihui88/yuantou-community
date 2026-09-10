@@ -7,6 +7,7 @@ import FeedCard from '../../components/FeedCard'
 import CommentList from '../../components/CommentList'
 import EmptyState from '../../components/EmptyState'
 import { formatRelativeTime } from '../../utils/formatTime'
+import { getDemoComments } from '../../utils/demoData'
 import type { Comment, User } from '../../types'
 import './index.css'
 
@@ -17,19 +18,8 @@ const PostDetail = memo(() => {
 
   const post = posts.find((p) => p.id === postId) || posts[0]
 
-  const [comments, setComments] = useState<Comment[]>([
-    {
-      id: 'c_001', user: { id: 'u_1', nickname: '热心网友', avatar: 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=200&h=200&fit=crop&q=80', following: 0, followers: 200 },
-      content: '写得太好了，收藏起来慢慢看！', likes: 12, createdAt: '2026-08-21T15:00:00Z',
-    },
-    {
-      id: 'c_002', user: { id: 'u_2', nickname: '前端萌新', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&h=200&fit=crop&q=80', following: 0, followers: 50 },
-      content: '请问有源码吗？想学习一下~', likes: 5, createdAt: '2026-08-21T16:30:00Z',
-      replies: [
-        { id: 'c_002_1', user: { id: 'u_1', nickname: '热心网友', avatar: 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=200&h=200&fit=crop&q=80', following: 0, followers: 200 }, content: '同求！', likes: 2, createdAt: '2026-08-21T17:00:00Z' },
-      ],
-    },
-  ])
+  // 示例评论：按帖子 id 取演示数据，未命中时给出通用示例
+  const [comments, setComments] = useState<Comment[]>(() => getDemoComments(postId || ''))
   const [inputValue, setInputValue] = useState('')
 
   const handleLike = useCallback(() => { if (post) toggleLike(post.id) }, [post, toggleLike])

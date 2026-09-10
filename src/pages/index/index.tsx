@@ -3,6 +3,7 @@ import Taro from '@tarojs/taro'
 import { memo, useCallback, useState, useEffect } from 'react'
 import { useAppStore } from '../../store/useAppStore'
 import { get, post } from '../../utils/request'
+import { isDemoMode, getDemoPosts } from '../../utils/demoData'
 import FeedCard from '../../components/FeedCard'
 import SearchBar from '../../components/SearchBar'
 import EmptyState from '../../components/EmptyState'
@@ -55,8 +56,21 @@ const Index = memo(() => {
   const [refreshing, setLocalRefreshing] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
 
-  // 加载帖子列表
+  // 加载帖子列表（演示模式 / 后端不可达时使用示例数据）
   const loadPosts = useCallback(async (pageNum = 1, isRefresh = false) => {
+    // 演示模式：直接读取本地示例动态，不请求后端
+    if (isDemoMode()) {
+      const demo = getDemoPosts(feedTab, pageNum, 10)
+      if (isRefresh || pageNum === 1) {
+        setLocalPosts(demo.list)
+      } else {
+        setLocalPosts(prev => [...prev, ...demo.list])
+      }
+      setLocalHasMore(demo.hasMore && demo.list.length > 0)
+      setPage(pageNum)
+      return
+    }
+
     try {
       const res = await get<{ list: any[]; total: number; hasMore: boolean }>(
         `/api/posts?tab=${feedTab}&page=${pageNum}&pageSize=10`
@@ -71,7 +85,16 @@ const Index = memo(() => {
       setPage(pageNum)
     } catch (e) {
       console.error('loadPosts error', e)
-      Taro.showToast({ title: '加载失败', icon: 'none' })
+      // 后端不可达：降级到示例数据，保证页面有内容可看
+      const demo = getDemoPosts(feedTab, pageNum, 10)
+      if (isRefresh || pageNum === 1) {
+        setLocalPosts(demo.list)
+      } else {
+        setLocalPosts(prev => [...prev, ...demo.list])
+      }
+      setLocalHasMore(demo.hasMore && demo.list.length > 0)
+      setPage(pageNum)
+      Taro.showToast({ title: '当前为示例内容', icon: 'none', duration: 1500 })
     }
   }, [feedTab])
 
@@ -105,6 +128,15 @@ const Index = memo(() => {
       Taro.navigateTo({ url: '/pages/login/index' })
       return
     }
+    // 演示模式：本地切换点赞状态，不走接口
+    if (isDemoMode()) {
+      setLocalPosts(prev => prev.map(p => {
+        if (p.id !== postId) return p
+        const liked = !p.isLiked
+        return { ...p, isLiked: liked, likes: Math.max(0, p.likes + (liked ? 1 : -1)) }
+      }))
+      return
+    }
     try {
       const res = await post<{ liked: boolean }>(`/api/posts/${postId}/like`)
       const liked = res.data.liked
@@ -112,7 +144,14 @@ const Index = memo(() => {
         p.id === postId ? { ...p, likes: p.likes + (liked ? 1 : -1) } : p
       ))
       Taro.showToast({ title: liked ? '已点赞' : '取消点赞', icon: 'none', duration: 1000 })
-    } catch {}
+    } catch {
+      // 接口失败时本地兜底，保证交互有反馈
+      setLocalPosts(prev => prev.map(p => {
+        if (p.id !== postId) return p
+        const liked = !p.isLiked
+        return { ...p, isLiked: liked, likes: Math.max(0, p.likes + (liked ? 1 : -1)) }
+      }))
+    }
   }, [])
 
   // 评论跳转
