@@ -26,6 +26,18 @@ export default defineConfig(async (merge) => {
       type: 'webpack5',
       prebundle: { enable: false },
     },
+    // JS 使用 esbuild 压缩（terser 在本项目产物规模下长时间卡死，esbuild 原生并行快得多）
+    // 注意：target 需高于 es5，否则 esbuild 无法处理 const/let 会直接报错
+    // CSS 保持默认 csso（Taro 的 esbuild CSS 压缩插件与内置 esbuild 版本不兼容，会报 preset 无效）
+    jsMinimizer: 'esbuild',
+    esbuild: {
+      minify: {
+        enable: true,
+        config: {
+          target: 'es2015',
+        },
+      },
+    },
     cache: {
       enable: false,
     },
